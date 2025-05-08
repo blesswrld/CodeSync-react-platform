@@ -8,7 +8,7 @@ import {
 } from "@stream-io/video-react-sdk";
 import { LayoutListIcon, LoaderIcon, UsersIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -21,6 +21,8 @@ import {
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
+import EndCallButton from "./EndCallButton";
+import toast from "react-hot-toast";
 
 function MeetingRoom() {
     const router = useRouter();
@@ -30,6 +32,14 @@ function MeetingRoom() {
     const { useCallCallingState } = useCallStateHooks();
 
     const callingState = useCallCallingState();
+
+    useEffect(() => {
+        if (callingState === CallingState.LEFT) {
+            toast.success("Left successfully");
+
+            router.push("/");
+        }
+    }, [callingState, router]);
 
     if (callingState !== CallingState.JOINED) {
         return (
@@ -115,8 +125,7 @@ function MeetingRoom() {
                                     >
                                         <UsersIcon className="size-4" />
                                     </Button>
-                                    {/* TODO: add EndCallButton */}
-                                    {/* <EndCallButton /> */}
+                                    <EndCallButton />
                                 </div>
                             </div>
                         </div>
