@@ -23,6 +23,7 @@ import {
 import { Button } from "./ui/button";
 import EndCallButton from "./EndCallButton";
 import toast from "react-hot-toast";
+import CodeEditor from "./CodeEditor";
 
 function MeetingRoom() {
     const router = useRouter();
@@ -134,9 +135,8 @@ function MeetingRoom() {
 
                 <ResizableHandle withHandle />
 
-                <ResizablePanel defaultSize={65} minSize={25}>
-                    {/* TODO: add CodeEditor */}
-                    {/* <CodeEditor /> */}
+                <ResizablePanel defaultSize={35} minSize={0}>
+                    <CodeEditor />
                 </ResizablePanel>
             </ResizablePanelGroup>
         </div>
