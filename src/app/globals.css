@@ -62,6 +62,10 @@
         --chart-3: 30 80% 55%;
         --chart-4: 280 65% 60%;
         --chart-5: 340 75% 55%;
+        /* styles for settings  */
+        .str-video__device-settings {
+            font-family: var(--font-geist-sans) var(--font-geist-mono) !important;
+        }
     }
 }
 
@@ -71,5 +75,6 @@
     }
     body {
         @apply bg-background text-foreground;
+        font-family: var(--font-geist-sans) var(--font-geist-mono);
     }
 }
