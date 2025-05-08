@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import MeetingModal from "@/components/MeetingModal";
 import LoaderUI from "@/components/LoaderUI";
 import { Loader2Icon } from "lucide-react";
+import toast from "react-hot-toast";
 // import MeetingCard from "@/components/MeetingCard";
 
 export default function Home() {

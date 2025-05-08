@@ -9,6 +9,7 @@ import { CameraIcon, MicIcon, SettingsIcon } from "lucide-react";
 // import { Switch } from "./ui/switch";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
+import toast from "react-hot-toast";
 
 function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
     const [isCameraDisabled, setIsCameraDisabled] = useState(true);

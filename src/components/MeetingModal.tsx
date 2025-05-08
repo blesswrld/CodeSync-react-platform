@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import useMeetingActions from "@/hooks/useMeetingActions";
+import toast from "react-hot-toast";
 
 interface MeetingModalProps {
     isOpen: boolean;
@@ -25,6 +26,7 @@ function MeetingModal({
             // if it's a full URL extract meeting ID
             const meetingId = meetingUrl.split("/").pop();
             if (meetingId) joinMeeting(meetingId);
+            toast.success("Joined successfully");
         } else {
             createInstantMeeting();
         }
