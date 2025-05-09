@@ -24,7 +24,7 @@ export const getMyInterviews = query({
             )
             .collect();
 
-        return interviews;
+        return interviews!;
     },
 });
 

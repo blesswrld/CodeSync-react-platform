@@ -46,5 +46,3 @@ export const getUserByClerkId = query({
         return user;
     },
 });
-
-export default syncUser;
