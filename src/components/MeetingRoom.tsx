@@ -102,18 +102,28 @@ function MeetingRoom() {
                     </div>
 
                     {/* VIDEO CONTROLS */}
-                    <div className="absolute bottom-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 z-20 flex justify-center">
-                        <div className="flex flex-wrap items-center justify-center gap-1.5 min-[460px]:gap-2 rounded-full bg-background/80 p-1.5 min-[460px]:p-2 shadow-lg backdrop-blur-sm max-w-[calc(100%-2rem)] min-[460px]:max-w-sm md:max-w-none">
-                            <CallControls onLeave={() => router.push("/")} />
-
+                    <div className="absolute bottom-3 sm:bottom-4 left-2 right-2 md:left-1/2 md:-translate-x-1/2 z-20 flex justify-center px-1">
+                        <div
+                            className="flex flex-wrap items-center justify-center 
+                                    gap-1 min-[380px]:gap-1.5 min-[460px]:gap-2 
+                                    rounded-full bg-background/80 
+                                    p-1.5 min-[460px]:p-2 
+                                    shadow-lg backdrop-blur-sm 
+                                    w-full max-w-md md:max-w-none md:w-auto"
+                        >
+                            <div className="min-w-0">
+                                <CallControls
+                                    onLeave={() => router.push("/")}
+                                />
+                            </div>
                             {/* Группа дополнительных кнопок */}
-                            <div className="flex items-center gap-1 min-[460px]:gap-2">
+                            <div className="flex items-center gap-0.5 min-[380px]:gap-1 min-[460px]:gap-2">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="rounded-full w-8 h-8 min-[460px]:w-9 min-[460px]:h-9 p-0"
+                                            className="rounded-full w-8 h-8 min-[380px]:w-9 min-[380px]:h-9 p-0"
                                         >
                                             <LayoutListIcon className="size-4 min-[460px]:size-5" />
                                         </Button>

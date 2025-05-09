@@ -66,6 +66,11 @@
         .str-video__device-settings {
             font-family: var(--font-geist-sans) var(--font-geist-mono) !important;
         }
+        .str-video__call-controls {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+        }
     }
 }
 
