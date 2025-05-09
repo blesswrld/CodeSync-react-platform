@@ -27,7 +27,7 @@ import EndCallButton from "./EndCallButton";
 import toast from "react-hot-toast";
 import CodeEditor from "./CodeEditor";
 
-// Хук для отслеживания ширины окна
+// Хук для отслеживания ширины окна (для общей компоновки панелей)
 const useIsMobileScreen = (breakpoint = 900) => {
     const [isMobile, setIsMobile] = useState(false);
 
@@ -48,7 +48,7 @@ const useIsMobileScreen = (breakpoint = 900) => {
 
 function MeetingRoom() {
     const router = useRouter();
-    const isMobileScreen = useIsMobileScreen(900); // true если ширина <= 900px
+    const isMobileScreen = useIsMobileScreen(900); // true если ширина <= 900px (для скрытия панели CodeEditor)
 
     const [layout, setLayout] = useState<"grid" | "speaker">("speaker");
     const [showParticipants, setShowParticipants] = useState(false);
@@ -59,13 +59,12 @@ function MeetingRoom() {
     useEffect(() => {
         if (callingState === CallingState.LEFT) {
             toast.success("Left successfully");
-
             router.push("/");
         }
     }, [callingState, router]);
 
-    const videoPanelDesktopSize = 35;
-    const codingPanelDesktopSize = 65;
+    const videoPanelDesktopSize = 35; // дефолтный размер для десктопа
+    const codingPanelDesktopSize = 65; // дефолтный размер для десктопа
 
     if (callingState !== CallingState.JOINED) {
         return (
@@ -103,48 +102,54 @@ function MeetingRoom() {
                     </div>
 
                     {/* VIDEO CONTROLS */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
-                        <div className="flex items-center gap-2 rounded-full bg-background/80 p-2 shadow-lg backdrop-blur-sm">
+                    <div className="absolute bottom-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 z-20 flex justify-center">
+                        <div className="flex flex-wrap items-center justify-center gap-1.5 min-[460px]:gap-2 rounded-full bg-background/80 p-1.5 min-[460px]:p-2 shadow-lg backdrop-blur-sm max-w-[calc(100%-2rem)] min-[460px]:max-w-sm md:max-w-none">
                             <CallControls onLeave={() => router.push("/")} />
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="rounded-full"
-                                    >
-                                        <LayoutListIcon className="size-5" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem
-                                        onClick={() => setLayout("grid")}
-                                    >
-                                        Grid View
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onClick={() => setLayout("speaker")}
-                                    >
-                                        Speaker View
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="rounded-full"
-                                onClick={() =>
-                                    setShowParticipants(!showParticipants)
-                                }
-                            >
-                                <UsersIcon className="size-5" />
-                            </Button>
-                            <EndCallButton />
+
+                            {/* Группа дополнительных кнопок */}
+                            <div className="flex items-center gap-1 min-[460px]:gap-2">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="rounded-full w-8 h-8 min-[460px]:w-9 min-[460px]:h-9 p-0"
+                                        >
+                                            <LayoutListIcon className="size-4 min-[460px]:size-5" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem
+                                            onClick={() => setLayout("grid")}
+                                        >
+                                            Grid View
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => setLayout("speaker")}
+                                        >
+                                            Speaker View
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="rounded-full w-8 h-8 min-[460px]:w-9 min-[460px]:h-9 p-0"
+                                    onClick={() =>
+                                        setShowParticipants(!showParticipants)
+                                    }
+                                >
+                                    <UsersIcon className="size-4 min-[460px]:size-5" />
+                                </Button>
+
+                                <EndCallButton />
+                            </div>
                         </div>
                     </div>
+                    {/* VIDEO CONTROLS */}
                 </ResizablePanel>
 
-                {/* Условно рендерим ResizableHandle и панель с CodeEditor */}
                 {!isMobileScreen && (
                     <>
                         <ResizableHandle withHandle />
