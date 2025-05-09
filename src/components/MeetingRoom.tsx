@@ -1,3 +1,5 @@
+"use client";
+
 import {
     CallControls,
     CallingState,
@@ -25,8 +27,28 @@ import EndCallButton from "./EndCallButton";
 import toast from "react-hot-toast";
 import CodeEditor from "./CodeEditor";
 
+// Хук для отслеживания ширины окна
+const useIsMobileScreen = (breakpoint = 900) => {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkScreenSize = () => {
+            setIsMobile(window.innerWidth <= breakpoint);
+        };
+
+        if (typeof window !== "undefined") {
+            checkScreenSize();
+            window.addEventListener("resize", checkScreenSize);
+            return () => window.removeEventListener("resize", checkScreenSize);
+        }
+    }, [breakpoint]);
+
+    return isMobile;
+};
+
 function MeetingRoom() {
     const router = useRouter();
+    const isMobileScreen = useIsMobileScreen(900); // true если ширина <= 900px
 
     const [layout, setLayout] = useState<"grid" | "speaker">("speaker");
     const [showParticipants, setShowParticipants] = useState(false);
@@ -42,22 +64,27 @@ function MeetingRoom() {
         }
     }, [callingState, router]);
 
+    const videoPanelDesktopSize = 35;
+    const codingPanelDesktopSize = 65;
+
     if (callingState !== CallingState.JOINED) {
         return (
-            <div className="h-96 flex items-center justify-center">
-                <LoaderIcon className="size-6 animate-spin" />
+            <div className="h-screen flex items-center justify-center">
+                <LoaderIcon className="size-10 animate-spin text-muted-foreground" />
             </div>
         );
     }
 
     return (
         <div className="h-[calc(100vh-4rem-1px)]">
-            <ResizablePanelGroup direction="horizontal">
+            <ResizablePanelGroup
+                direction="horizontal"
+                className="h-full w-full"
+            >
                 <ResizablePanel
-                    defaultSize={35}
-                    minSize={25}
-                    maxSize={100}
-                    className="relative"
+                    defaultSize={isMobileScreen ? 100 : videoPanelDesktopSize}
+                    minSize={isMobileScreen ? 100 : 20}
+                    className="relative flex items-center justify-center"
                 >
                     {/* VIDEO LAYOUT */}
                     <div className="absolute inset-0">
@@ -66,10 +93,8 @@ function MeetingRoom() {
                         ) : (
                             <SpeakerLayout />
                         )}
-
-                        {/* PARTICIPANTS LIST OVERLAY */}
                         {showParticipants && (
-                            <div className="absolute right-0 top-0 h-full w-[300px] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                            <div className="absolute right-0 top-0 z-10 h-full w-[280px] md:w-[300px] bg-background/90 backdrop-blur-sm">
                                 <CallParticipantsList
                                     onClose={() => setShowParticipants(false)}
                                 />
@@ -78,66 +103,59 @@ function MeetingRoom() {
                     </div>
 
                     {/* VIDEO CONTROLS */}
-                    <div className="absolute bottom-4 left-0 right-0">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="flex items-center gap-2 flex-wrap justify-center px-4">
-                                <CallControls
-                                    onLeave={() => router.push("/")}
-                                />
-
-                                <div className="flex items-center gap-2">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                className="size-10"
-                                            >
-                                                <LayoutListIcon className="size-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuItem
-                                                onClick={() =>
-                                                    setLayout("grid")
-                                                }
-                                            >
-                                                Grid View
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() =>
-                                                    setLayout("speaker")
-                                                }
-                                            >
-                                                Speaker View
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+                        <div className="flex items-center gap-2 rounded-full bg-background/80 p-2 shadow-lg backdrop-blur-sm">
+                            <CallControls onLeave={() => router.push("/")} />
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
                                     <Button
-                                        variant="outline"
+                                        variant="ghost"
                                         size="icon"
-                                        className="size-10"
-                                        onClick={() =>
-                                            setShowParticipants(
-                                                !showParticipants
-                                            )
-                                        }
+                                        className="rounded-full"
                                     >
-                                        <UsersIcon className="size-4" />
+                                        <LayoutListIcon className="size-5" />
                                     </Button>
-                                    <EndCallButton />
-                                </div>
-                            </div>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem
+                                        onClick={() => setLayout("grid")}
+                                    >
+                                        Grid View
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => setLayout("speaker")}
+                                    >
+                                        Speaker View
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-full"
+                                onClick={() =>
+                                    setShowParticipants(!showParticipants)
+                                }
+                            >
+                                <UsersIcon className="size-5" />
+                            </Button>
+                            <EndCallButton />
                         </div>
                     </div>
                 </ResizablePanel>
 
-                <ResizableHandle withHandle />
-
-                <ResizablePanel defaultSize={35} minSize={0}>
-                    <CodeEditor />
-                </ResizablePanel>
+                {/* Условно рендерим ResizableHandle и панель с CodeEditor */}
+                {!isMobileScreen && (
+                    <>
+                        <ResizableHandle withHandle />
+                        <ResizablePanel
+                            defaultSize={codingPanelDesktopSize}
+                            minSize={1}
+                        >
+                            <CodeEditor />
+                        </ResizablePanel>
+                    </>
+                )}
             </ResizablePanelGroup>
         </div>
     );

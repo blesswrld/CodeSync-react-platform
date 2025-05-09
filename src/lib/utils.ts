@@ -16,37 +16,82 @@ export function cn(...inputs: ClassValue[]) {
 type Interview = Doc<"interviews">;
 type User = Doc<"users">;
 
-export const groupInterviews = (interviews: Interview[]) => {
-    if (!interviews) return {};
-
-    return interviews.reduce((acc: any, interview: Interview) => {
-        const date = new Date(interview.startTime);
-        const now = new Date();
-
-        if (interview.status === "succeeded") {
-            acc.succeeded = [...(acc.succeeded || []), interview];
-        } else if (interview.status === "failed") {
-            acc.failed = [...(acc.failed || []), interview];
-        } else if (isBefore(date, now)) {
-            acc.completed = [...(acc.completed || []), interview];
-        } else if (isAfter(date, now)) {
-            acc.upcoming = [...(acc.upcoming || []), interview];
-        }
-
-        return acc;
-    }, {});
+export type GroupedInterviews = {
+    upcoming: Interview[];
+    completed: Interview[];
+    succeeded: Interview[];
+    failed: Interview[];
 };
 
-export const getCandidateInfo = (users: User[], candidateId: string) => {
-    const candidate = users?.find((user) => user.clerkId === candidateId);
+export const groupInterviews = (
+    interviews: Interview[] | undefined
+): GroupedInterviews => {
+    const grouped: GroupedInterviews = {
+        upcoming: [],
+        completed: [],
+        succeeded: [],
+        failed: [],
+    };
+
+    if (!interviews || interviews.length === 0) {
+        return grouped;
+    }
+
+    const now = new Date();
+
+    for (const interview of interviews) {
+        const interviewStartTime = new Date(interview.startTime);
+
+        if (interview.status === "succeeded") {
+            grouped.succeeded.push(interview);
+        } else if (interview.status === "failed") {
+            grouped.failed.push(interview);
+        } else if (interview.status === "completed") {
+            grouped.completed.push(interview);
+        } else if (interview.status === "upcoming") {
+            if (isAfter(interviewStartTime, now)) {
+                grouped.upcoming.push(interview);
+            } else {
+                grouped.completed.push(interview);
+            }
+        } else {
+            if (isAfter(interviewStartTime, now)) {
+                grouped.upcoming.push(interview);
+            } else {
+                grouped.completed.push(interview);
+            }
+        }
+    }
+    return grouped;
+};
+
+export const getCandidateInfo = (
+    users: User[] | undefined,
+    candidateId: string | undefined
+) => {
+    if (!users) {
+        return { name: "Loading User...", image: "", initials: "L" };
+    }
+    if (!candidateId) {
+        return { name: "N/A", image: "", initials: "N" };
+    }
+    const candidate = users.find((user) => user.clerkId === candidateId);
+    if (!candidate) {
+        return {
+            name: `ID: ${candidateId.substring(0, 6)}...`,
+            image: "",
+            initials: candidateId[0]?.toUpperCase() || "C",
+        };
+    }
     return {
-        name: candidate?.name || "Unknown Candidate",
-        image: candidate?.image || "",
+        name: candidate.name || "Unknown Candidate",
+        image: candidate.image || "",
         initials:
-            candidate?.name
+            candidate.name
                 ?.split(" ")
                 .map((n) => n[0])
-                .join("") || "UC",
+                .join("")
+                .toUpperCase() || "UC",
     };
 };
 

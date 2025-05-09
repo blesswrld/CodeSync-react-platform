@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Id } from "../../convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -28,22 +30,33 @@ import {
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
 
-function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
+interface CommentDialogProps {
+    interviewId: Id<"interviews">;
+}
+
+function CommentDialog({ interviewId }: CommentDialogProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [comment, setComment] = useState("");
     const [rating, setRating] = useState("3");
 
-    const addComment = useMutation(api.comments.addComment);
-    const users = useQuery(api.users.getUsers);
+    const addCommentMutation = useMutation(api.comments.addComment);
+    const allUsers = useQuery(api.users.getUsers);
     const existingComments = useQuery(api.comments.getComments, {
         interviewId,
     });
 
     const handleSubmit = async () => {
-        if (!comment.trim()) return toast.error("Please enter comment");
+        if (!comment.trim()) {
+            toast.error("Please enter your comment.");
+            return;
+        }
+        if (parseInt(rating) < 1 || parseInt(rating) > 5) {
+            toast.error("Please select a rating between 1 and 5.");
+            return;
+        }
 
         try {
-            await addComment({
+            await addCommentMutation({
                 interviewId,
                 content: comment.trim(),
                 rating: parseInt(rating),
@@ -54,22 +67,27 @@ function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
             setRating("3");
             setIsOpen(false);
         } catch (error) {
+            console.error("Failed to submit comment:", error);
             toast.error("Failed to submit comment");
         }
     };
 
-    const renderStars = (rating: number) => (
+    const renderStars = (ratingValue: number) => (
         <div className="flex gap-0.5">
-            {[1, 2, 3, 4, 5].map((starValue) => (
+            {[1, 2, 3, 4, 5].map((star) => (
                 <StarIcon
-                    key={starValue}
-                    className={`h-4 w-4 ${starValue <= rating ? "fill-primary text-primary" : "text-muted-foreground"}`}
+                    key={star}
+                    className={`h-4 w-4 ${
+                        star <= ratingValue
+                            ? "fill-primary text-primary"
+                            : "text-muted-foreground"
+                    }`}
                 />
             ))}
         </div>
     );
 
-    if (existingComments === undefined || users === undefined) return null;
+    if (existingComments === undefined || allUsers === undefined) return null;
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -77,75 +95,77 @@ function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
             <DialogTrigger asChild>
                 <Button variant="secondary" className="w-full">
                     <MessageSquareIcon className="h-4 w-4 mr-2" />
-                    Add Comment
+                    Add Review
                 </Button>
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
-                    <DialogTitle>Interview Comment</DialogTitle>
+                    <DialogTitle>Interview Review</DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-6">
+                <div className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
                     {existingComments.length > 0 && (
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <h4 className="text-sm font-medium">
-                                    Previous Comments
+                                    Previous Reviews
                                 </h4>
                                 <Badge variant="outline">
-                                    {existingComments.length} Comment
+                                    {existingComments.length} Review
                                     {existingComments.length !== 1 ? "s" : ""}
                                 </Badge>
                             </div>
 
-                            {/* DISPLAY EXISTING COMMENTS */}
-                            <ScrollArea className="h-[240px]">
-                                <div className="space-y-4">
-                                    {existingComments.map((comment, index) => {
-                                        const interviewer = getInterviewerInfo(
-                                            users,
-                                            comment.interviewerId
-                                        );
+                            <ScrollArea className="h-[200px] border rounded-md">
+                                <div className="space-y-3 p-3">
+                                    {existingComments.map((c) => {
+                                        const commenterInfo =
+                                            getInterviewerInfo(
+                                                allUsers,
+                                                c.interviewerId
+                                            );
+
                                         return (
                                             <div
-                                                key={index}
-                                                className="rounded-lg border p-4 space-y-3"
+                                                key={c._id}
+                                                className="rounded-lg border bg-card p-3 space-y-2 shadow-sm"
                                             >
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <Avatar className="h-8 w-8">
                                                             <AvatarImage
                                                                 src={
-                                                                    interviewer.image
+                                                                    commenterInfo.image
+                                                                }
+                                                                alt={
+                                                                    commenterInfo.name
                                                                 }
                                                             />
                                                             <AvatarFallback>
                                                                 {
-                                                                    interviewer.initials
+                                                                    commenterInfo.initials
                                                                 }
                                                             </AvatarFallback>
                                                         </Avatar>
                                                         <div>
                                                             <p className="text-sm font-medium">
                                                                 {
-                                                                    interviewer.name
+                                                                    commenterInfo.name
                                                                 }
                                                             </p>
                                                             <p className="text-xs text-muted-foreground">
                                                                 {format(
-                                                                    comment._creationTime,
+                                                                    c._creationTime,
                                                                     "MMM d, yyyy • h:mm a"
                                                                 )}
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    {renderStars(
-                                                        comment.rating
-                                                    )}
+                                                    {renderStars(c.rating)}
                                                 </div>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {comment.content}
+                                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                                    {c.content}
                                                 </p>
                                             </div>
                                         );
@@ -155,8 +175,7 @@ function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
                         </div>
                     )}
 
-                    <div className="space-y-4">
-                        {/* RATING */}
+                    <div className="space-y-4 pt-2 border-t">
                         <div className="space-y-2">
                             <Label>Rating</Label>
                             <Select value={rating} onValueChange={setRating}>
@@ -184,8 +203,9 @@ function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
                             <Textarea
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
-                                placeholder="Share your detailed comment about the candidate..."
-                                className="h-32"
+                                placeholder="Share your thoughts and feedback..."
+                                className="h-28"
+                                rows={4}
                             />
                         </div>
                     </div>
@@ -193,7 +213,14 @@ function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
 
                 {/* BUTTONS */}
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsOpen(false)}>
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            setIsOpen(false);
+                            setComment("");
+                            setRating("3");
+                        }}
+                    >
                         Cancel
                     </Button>
                     <Button onClick={handleSubmit}>Submit</Button>

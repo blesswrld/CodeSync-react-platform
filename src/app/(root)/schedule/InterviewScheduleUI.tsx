@@ -1,14 +1,15 @@
+"use client";
+
 import { useUser } from "@clerk/nextjs";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useMutation, useQuery } from "convex/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../../../convex/_generated/api";
 import toast from "react-hot-toast";
 import {
     Dialog,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
     DialogContent,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -26,19 +27,34 @@ import { Loader2Icon, XIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { TIME_SLOTS } from "../../constants/index";
 import MeetingCard from "@/components/MeetingCard";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useRouter } from "next/navigation";
+import LoaderUI from "@/components/LoaderUI";
+import { DialogTrigger } from "@radix-ui/react-dialog";
 
 function InterviewScheduleUI() {
     const client = useStreamVideoClient();
     const { user } = useUser();
-    const [open, setOpen] = useState(false);
+    const router = useRouter();
+    const {
+        isLoading: roleLoading,
+        isInterviewer,
+        isCandidate,
+    } = useUserRole();
+
+    const [isSchedulingDialogOpen, setIsSchedulingDialogOpen] = useState(false);
+
     const [isCreating, setIsCreating] = useState(false);
 
-    const interviews = useQuery(api.interviews.getAllInterviews) ?? [];
-    const users = useQuery(api.users.getUsers) ?? [];
+    const allUsers = useQuery(api.users.getUsers) ?? [];
     const createInterview = useMutation(api.interviews.createInterview);
 
-    const candidates = users?.filter((u) => u.role === "candidate");
-    const interviewers = users?.filter((u) => u.role === "interviewer");
+    const existingInterviews = useQuery(api.interviews.getAllInterviews) ?? [];
+
+    const availableCandidates = allUsers?.filter((u) => u.role === "candidate");
+    const availableInterviewers = allUsers?.filter(
+        (u) => u.role === "interviewer"
+    );
 
     const [formData, setFormData] = useState({
         title: "",
@@ -46,14 +62,39 @@ function InterviewScheduleUI() {
         date: new Date(),
         time: "09:00",
         candidateId: "",
-        interviewerIds: user?.id ? [user.id] : [],
+        interviewerIds: [] as string[],
     });
+
+    useEffect(() => {
+        if (isCandidate && user?.id) {
+            setFormData((prev) => ({
+                ...prev,
+                candidateId: user.id,
+            }));
+        } else if (isInterviewer && user?.id) {
+            setFormData((prev) => ({
+                ...prev,
+                interviewerIds: [user.id],
+                candidateId: "",
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                candidateId: "",
+                interviewerIds: [],
+            }));
+        }
+    }, [isCandidate, isInterviewer, user?.id]);
 
     const scheduleMeeting = async () => {
         if (!client || !user) return;
-        if (!formData.candidateId || formData.interviewerIds.length === 0) {
+        if (!formData.candidateId) {
+            toast.error("Please select a candidate.");
+            return;
+        }
+        if (formData.interviewerIds.length === 0 && isInterviewer) {
             toast.error(
-                "Please select both candidate and at least one interviewer"
+                "As an interviewer, please select at least one interviewer (yourself included)."
             );
             return;
         }
@@ -72,6 +113,12 @@ function InterviewScheduleUI() {
             const [hours, minutes] = time.split(":");
             const meetingDate = new Date(date);
             meetingDate.setHours(parseInt(hours), parseInt(minutes), 0);
+
+            if (!title.trim()) {
+                toast.error("Please provide an interview title.");
+                setIsCreating(false);
+                return;
+            }
 
             const id = crypto.randomUUID();
             const call = client.call("default", id);
@@ -96,19 +143,19 @@ function InterviewScheduleUI() {
                 interviewerIds,
             });
 
-            setOpen(false);
+            setIsSchedulingDialogOpen(false);
             toast.success("Meeting scheduled successfully!");
-
+            router.push("/dashboard");
             setFormData({
                 title: "",
                 description: "",
                 date: new Date(),
                 time: "09:00",
-                candidateId: "",
-                interviewerIds: user?.id ? [user.id] : [],
+                candidateId: isCandidate && user?.id ? user.id : "",
+                interviewerIds: isInterviewer && user?.id ? [user.id] : [],
             });
         } catch (error) {
-            console.error(error);
+            console.error("Error scheduling meeting:", error);
             toast.error("Failed to schedule meeting. Please try again.");
         } finally {
             setIsCreating(false);
@@ -125,7 +172,14 @@ function InterviewScheduleUI() {
     };
 
     const removeInterviewer = (interviewerId: string) => {
-        if (interviewerId === user?.id) return;
+        if (
+            isInterviewer &&
+            user?.id === interviewerId &&
+            formData.interviewerIds.length === 1
+        ) {
+            toast.error("You cannot remove yourself as the only interviewer.");
+            return;
+        }
         setFormData((prev) => ({
             ...prev,
             interviewerIds: prev.interviewerIds.filter(
@@ -134,13 +188,15 @@ function InterviewScheduleUI() {
         }));
     };
 
-    const selectedInterviewers = interviewers.filter((i) =>
+    const selectedInterviewersDetails = availableInterviewers.filter((i) =>
         formData.interviewerIds.includes(i.clerkId)
     );
 
-    const availableInterviewers = interviewers.filter(
+    const stillAvailableInterviewers = availableInterviewers.filter(
         (i) => !formData.interviewerIds.includes(i.clerkId)
     );
+
+    if (roleLoading) return <LoaderUI />;
 
     return (
         <div className="container max-w-7xl mx-auto p-6 space-y-8">
@@ -153,11 +209,17 @@ function InterviewScheduleUI() {
                     </p>
                 </div>
 
-                {/* DIALOG */}
-
-                <Dialog open={open} onOpenChange={setOpen}>
+                <Dialog
+                    open={isSchedulingDialogOpen}
+                    onOpenChange={setIsSchedulingDialogOpen}
+                >
                     <DialogTrigger asChild>
-                        <Button size="lg">Schedule Interview</Button>
+                        <Button
+                            size="lg"
+                            onClick={() => setIsSchedulingDialogOpen(true)}
+                        >
+                            Schedule Interview
+                        </Button>
                     </DialogTrigger>
 
                     <DialogContent className="sm:max-w-[500px] h-[calc(100vh-200px)] overflow-auto">
@@ -171,7 +233,7 @@ function InterviewScheduleUI() {
                                     Title
                                 </label>
                                 <Input
-                                    placeholder="Interview title"
+                                    placeholder="E.g., Technical Screen, Behavioral Round"
                                     value={formData.title}
                                     onChange={(e) =>
                                         setFormData({
@@ -185,10 +247,10 @@ function InterviewScheduleUI() {
                             {/* INTERVIEW DESC */}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">
-                                    Description
+                                    Description (Optional)
                                 </label>
                                 <Textarea
-                                    placeholder="Interview description"
+                                    placeholder="Any additional details for the interview"
                                     value={formData.description}
                                     onChange={(e) =>
                                         setFormData({
@@ -201,70 +263,100 @@ function InterviewScheduleUI() {
                             </div>
 
                             {/* CANDIDATE */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">
-                                    Candidate
-                                </label>
-                                <Select
-                                    value={formData.candidateId}
-                                    onValueChange={(candidateId) =>
-                                        setFormData({
-                                            ...formData,
-                                            candidateId,
-                                        })
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select candidate" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {candidates.map((candidate) => (
-                                            <SelectItem
-                                                key={candidate.clerkId}
-                                                value={candidate.clerkId}
-                                            >
-                                                <UserInfo user={candidate} />
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            {!isCandidate && ( // Show candidate selection only if scheduler is NOT a candidate
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">
+                                        Candidate
+                                    </label>
+                                    <Select
+                                        value={formData.candidateId}
+                                        onValueChange={(candidateId) =>
+                                            setFormData({
+                                                ...formData,
+                                                candidateId,
+                                            })
+                                        }
+                                        disabled={isCandidate}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select candidate" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availableCandidates.map((c) => (
+                                                <SelectItem
+                                                    key={c.clerkId}
+                                                    value={c.clerkId}
+                                                >
+                                                    <UserInfo user={c} />
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+                            {isCandidate && user && (
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">
+                                        Candidate
+                                    </label>
+                                    <div className="p-2 border rounded-md bg-muted">
+                                        <UserInfo
+                                            user={
+                                                allUsers.find(
+                                                    (u) => u.clerkId === user.id
+                                                )!
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
                             {/* INTERVIEWERS */}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">
-                                    Interviewers
+                                    Interviewers (Optional for candidates)
                                 </label>
                                 <div className="flex flex-wrap gap-2 mb-2">
-                                    {selectedInterviewers.map((interviewer) => (
-                                        <div
-                                            key={interviewer.clerkId}
-                                            className="inline-flex items-center gap-2 bg-secondary px-2 py-1 rounded-md text-sm"
-                                        >
-                                            <UserInfo user={interviewer} />
-                                            {interviewer.clerkId !==
-                                                user?.id && (
-                                                <button
-                                                    onClick={() =>
-                                                        removeInterviewer(
-                                                            interviewer.clerkId
-                                                        )
-                                                    }
-                                                    className="hover:text-destructive transition-colors"
-                                                >
-                                                    <XIcon className="h-4 w-4" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
+                                    {selectedInterviewersDetails.map(
+                                        (interviewer) => (
+                                            <div
+                                                key={interviewer.clerkId}
+                                                className="inline-flex items-center gap-2 bg-secondary px-2 py-1 rounded-md text-sm"
+                                            >
+                                                <UserInfo user={interviewer} />
+
+                                                {!(
+                                                    isInterviewer &&
+                                                    user?.id ===
+                                                        interviewer.clerkId &&
+                                                    formData.interviewerIds
+                                                        .length === 1
+                                                ) && (
+                                                    <button
+                                                        onClick={() =>
+                                                            removeInterviewer(
+                                                                interviewer.clerkId
+                                                            )
+                                                        }
+                                                        className="hover:text-destructive transition-colors"
+                                                    >
+                                                        <XIcon className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )
+                                    )}
                                 </div>
-                                {availableInterviewers.length > 0 && (
-                                    <Select onValueChange={addInterviewer}>
+                                {stillAvailableInterviewers.length > 0 && (
+                                    <Select
+                                        onValueChange={addInterviewer}
+                                        value=""
+                                    >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Add interviewer" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {availableInterviewers.map(
+                                            {stillAvailableInterviewers.map(
                                                 (interviewer) => (
                                                     <SelectItem
                                                         key={
@@ -283,6 +375,13 @@ function InterviewScheduleUI() {
                                         </SelectContent>
                                     </Select>
                                 )}
+                                {stillAvailableInterviewers.length === 0 &&
+                                    selectedInterviewersDetails.length ===
+                                        0 && (
+                                        <p className="text-xs text-muted-foreground">
+                                            No interviewers available to add.
+                                        </p>
+                                    )}
                             </div>
 
                             {/* DATE & TIME */}
@@ -299,13 +398,15 @@ function InterviewScheduleUI() {
                                             date &&
                                             setFormData({ ...formData, date })
                                         }
-                                        disabled={(date) => date < new Date()}
+                                        disabled={(date) =>
+                                            date <
+                                            new Date(
+                                                new Date().setHours(0, 0, 0, 0)
+                                            )
+                                        }
                                         className="rounded-md border"
                                     />
                                 </div>
-
-                                {/* TIME */}
-
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">
                                         Time
@@ -337,7 +438,9 @@ function InterviewScheduleUI() {
                             <div className="flex justify-end gap-3 pt-4">
                                 <Button
                                     variant="outline"
-                                    onClick={() => setOpen(false)}
+                                    onClick={() =>
+                                        setIsSchedulingDialogOpen(false)
+                                    }
                                 >
                                     Cancel
                                 </Button>
@@ -360,15 +463,18 @@ function InterviewScheduleUI() {
                 </Dialog>
             </div>
 
-            {/* LOADING STATE & MEETING CARDS */}
-            {!interviews ? (
+            {/* Display existing interviews */}
+            {!existingInterviews ? (
                 <div className="flex justify-center py-12">
                     <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
                 </div>
-            ) : interviews.length > 0 ? (
+            ) : existingInterviews.length > 0 ? (
                 <div className="spacey-4">
+                    <h2 className="text-2xl font-semibold mb-4">
+                        Scheduled Interviews
+                    </h2>
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {interviews.map((interview) => (
+                        {existingInterviews.map((interview) => (
                             <MeetingCard
                                 key={interview._id}
                                 interview={interview}
@@ -378,7 +484,7 @@ function InterviewScheduleUI() {
                 </div>
             ) : (
                 <div className="text-center py-12 text-muted-foreground">
-                    No interviews scheduled
+                    No interviews scheduled yet.
                 </div>
             )}
         </div>
