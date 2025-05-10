@@ -32,9 +32,8 @@ export default function Home() {
     if (isLoading) return <LoaderUI />;
 
     return (
-        <div className="container max-w-7xl mx-auto p-6">
-            {/* WELCOME SECTION */}
-            <div className="rounded-lg bg-card p-6 border shadow-sm mb-10">
+        <div className="container max-w-7xl mx-auto p-6 animate-in fade-in duration-500">
+            <div className="rounded-lg bg-card p-6 border shadow-sm mb-10 animate-slide-down">
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
                     Welcome back!
                 </h1>

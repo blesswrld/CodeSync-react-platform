@@ -6,7 +6,6 @@ import {
 import { useEffect, useState } from "react";
 import { Card } from "./ui/card";
 import { CameraIcon, MicIcon, SettingsIcon } from "lucide-react";
-// import { Switch } from "./ui/switch";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
 import toast from "react-hot-toast";
@@ -15,7 +14,6 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
     const [isCameraDisabled, setIsCameraDisabled] = useState(true);
     const [isMicDisabled, setIsMicDisabled] = useState(false);
 
-    // use hook
     const call = useCall();
 
     if (!call) return null;
@@ -36,11 +34,10 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-background/95">
+        <div className="min-h-screen flex items-center justify-center p-6 bg-background/95 animate-in fade-in duration-500">
             <div className="w-full max-w-[1200px] mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* VIDEO PREVIEW CONTAINER */}
-                    <Card className="md:col-span-1 p-6 flex flex-col">
+                    <Card className="md:col-span-1 p-6 flex flex-col animate-in slide-in-from-left-8 duration-500 ease-out">
                         <div>
                             <h1 className="text-xl font-semibold mb-1">
                                 Camera Preview
@@ -50,19 +47,15 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                             </p>
                         </div>
 
-                        {/* VIDEO PREVIEW */}
-                        <div className="mt-4 flex-1 min-h-[400px] rounded-xl overflow-hidden bg-muted/50 border relative">
+                        <div className="mt-4 flex-1 min-h-[400px] rounded-xl overflow-hidden bg-muted/50 border relative transition-shadow duration-300 hover:shadow-lg">
                             <div className="absolute inset-0">
                                 <VideoPreview className="h-full w-full" />
                             </div>
                         </div>
                     </Card>
 
-                    {/* CARD CONTROLS */}
-
-                    <Card className="md:col-span-1 p-6">
+                    <Card className="md:col-span-1 p-6 animate-in slide-in-from-right-8 duration-500 ease-out delay-150">
                         <div className="h-full flex flex-col">
-                            {/* MEETING DETAILS  */}
                             <div>
                                 <h2 className="text-xl font-semibold mb-1">
                                     Meeting Details
@@ -73,12 +66,11 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                             </div>
 
                             <div className="flex-1 flex flex-col justify-between">
-                                <div className="spacey-6 mt-8">
-                                    {/* CAM CONTROL */}
-                                    <div className="flex items-center justify-between">
+                                <div className="space-y-6 mt-8">
+                                    <div className="flex items-center justify-between animate-in fade-in duration-300 delay-200">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                <CameraIcon className="h-5 w-5 text-primary" />
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center transition-transform duration-200 group hover:scale-110">
+                                                <CameraIcon className="h-5 w-5 text-primary transition-transform duration-200 group-hover:rotate-6" />
                                             </div>
                                             <div>
                                                 <p className="font-medium">
@@ -96,14 +88,14 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                                             onCheckedChange={(checked) =>
                                                 setIsCameraDisabled(!checked)
                                             }
+                                            className="data-[state=checked]:bg-primary transition-colors duration-200"
                                         />
                                     </div>
 
-                                    {/* MIC CONTROL */}
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex items-center justify-between animate-in fade-in duration-300 delay-250">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                <MicIcon className="h-5 w-5 text-primary" />
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center transition-transform duration-200 group hover:scale-110">
+                                                <MicIcon className="h-5 w-5 text-primary transition-transform duration-200 group-hover:rotate-6" />
                                             </div>
                                             <div>
                                                 <p className="font-medium">
@@ -121,14 +113,14 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                                             onCheckedChange={(checked) =>
                                                 setIsMicDisabled(!checked)
                                             }
+                                            className="data-[state=checked]:bg-primary transition-colors duration-200"
                                         />
                                     </div>
 
-                                    {/* DEVICE SETTINGS */}
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex items-center justify-between animate-in fade-in duration-300 delay-300">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                <SettingsIcon className="h-5 w-5 text-primary" />
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center transition-transform duration-200 group hover:scale-110">
+                                                <SettingsIcon className="h-5 w-5 text-primary transition-transform duration-200 group-hover:rotate-6" />
                                             </div>
                                             <div>
                                                 <p className="font-medium">
@@ -143,16 +135,15 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                                     </div>
                                 </div>
 
-                                {/* JOIN BTN */}
-                                <div className="space-y-3 mt-8">
+                                <div className="space-y-3 mt-8 animate-in fade-in duration-300 delay-350">
                                     <Button
-                                        className="w-full"
+                                        className="w-full transition-transform duration-200 ease-out hover:scale-105"
                                         size="lg"
                                         onClick={handleJoin}
                                     >
                                         Join Meeting
                                     </Button>
-                                    <p className="text-xs text-center text-muted-foreground">
+                                    <p className="text-xs text-center text-muted-foreground animate-in fade-in duration-300 delay-400">
                                         Do not worry, our team is super
                                         friendly! We want you to succeed. 🎉
                                     </p>

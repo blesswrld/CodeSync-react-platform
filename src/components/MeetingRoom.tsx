@@ -75,7 +75,7 @@ function MeetingRoom() {
     }
 
     return (
-        <div className="h-[calc(100vh-4rem-1px)]">
+        <div className="h-[calc(100vh-4rem-1px)] animate-in fade-in duration-500">
             <ResizablePanelGroup
                 direction="horizontal"
                 className="h-full w-full"
@@ -93,7 +93,7 @@ function MeetingRoom() {
                             <SpeakerLayout />
                         )}
                         {showParticipants && (
-                            <div className="absolute right-0 top-0 z-10 h-full w-[280px] md:w-[300px] bg-background/90 backdrop-blur-sm">
+                            <div className="absolute pt-3 pr-2 pl-2 right-0 top-0 z-10 h-full w-[280px] md:w-[300px] bg-background/90 backdrop-blur-sm animate-in slide-in-from-right-full duration-300 ease-out">
                                 <CallParticipantsList
                                     onClose={() => setShowParticipants(false)}
                                 />
@@ -101,14 +101,13 @@ function MeetingRoom() {
                         )}
                     </div>
 
-                    {/* VIDEO CONTROLS */}
-                    <div className="absolute bottom-3 sm:bottom-4 left-2 right-2 md:left-1/2 md:-translate-x-1/2 z-20 flex justify-center px-1">
+                    <div className="absolute bottom-3 sm:bottom-4 left-2 right-2 md:left-1/2 md:-translate-x-1/2 z-20 flex justify-center px-1 animate-in fade-in slide-in-from-bottom-8 duration-500 ease-out delay-200">
                         <div
-                            className="flex flex-wrap items-center justify-center 
-                                    gap-1 min-[380px]:gap-1.5 min-[460px]:gap-2 
-                                    rounded-full bg-background/80 
-                                    p-1.5 min-[460px]:p-2 
-                                    shadow-lg backdrop-blur-sm 
+                            className="flex flex-wrap items-center justify-center
+                                    gap-1 min-[380px]:gap-1.5 min-[460px]:gap-2
+                                    rounded-full bg-background/80
+                                    p-1.5 min-[460px]:p-2
+                                    shadow-lg backdrop-blur-sm
                                     w-full max-w-md md:max-w-none md:w-auto"
                         >
                             <div className="min-w-0">
@@ -123,19 +122,21 @@ function MeetingRoom() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="rounded-full w-8 h-8 min-[380px]:w-9 min-[380px]:h-9 p-0"
+                                            className="rounded-full w-8 h-8 min-[380px]:w-9 min-[380px]:h-9 p-0 transition-transform duration-200 hover:scale-110"
                                         >
                                             <LayoutListIcon className="size-4 min-[460px]:size-5" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
+                                    <DropdownMenuContent className="animate-in fade-in-10 zoom-in-95 duration-300">
                                         <DropdownMenuItem
                                             onClick={() => setLayout("grid")}
+                                            className="transition-colors duration-200 hover:bg-accent hover:text-accent-foreground"
                                         >
                                             Grid View
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onClick={() => setLayout("speaker")}
+                                            className="transition-colors duration-200 hover:bg-accent hover:text-accent-foreground"
                                         >
                                             Speaker View
                                         </DropdownMenuItem>
@@ -145,7 +146,7 @@ function MeetingRoom() {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="rounded-full w-8 h-8 min-[460px]:w-9 min-[460px]:h-9 p-0"
+                                    className="rounded-full w-8 h-8 min-[460px]:w-9 min-[460px]:h-9 p-0 transition-transform duration-200 hover:scale-110"
                                     onClick={() =>
                                         setShowParticipants(!showParticipants)
                                     }
@@ -153,11 +154,12 @@ function MeetingRoom() {
                                     <UsersIcon className="size-4 min-[460px]:size-5" />
                                 </Button>
 
-                                <EndCallButton />
+                                <div className="transition-transform duration-200 hover:scale-110">
+                                    <EndCallButton />
+                                </div>
                             </div>
                         </div>
                     </div>
-                    {/* VIDEO CONTROLS */}
                 </ResizablePanel>
 
                 {!isMobileScreen && (
