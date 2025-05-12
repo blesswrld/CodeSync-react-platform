@@ -29,7 +29,9 @@ function RecordingCard({ recording }: { recording: CallRecording }) {
             : "Unknown duration";
 
     return (
-        <Card className="group hover:shadow-md transition-all">
+        // Added subtle lift and larger shadow on hover using Tailwind classes.
+        // The 'transition-all' class already handles the animation duration and easing.
+        <Card className="group hover:shadow-lg hover:-translate-y-0.5 transition-all">
             {/* CARD HEADER */}
             <CardHeader className="space-y-1">
                 <div className="space-y-2">
@@ -47,7 +49,7 @@ function RecordingCard({ recording }: { recording: CallRecording }) {
             </CardHeader>
 
             {/* CARD CONTENT */}
-
+            {/* The video preview area and play button already have transition-colors on hover */}
             <CardContent>
                 <div
                     className="w-full aspect-video bg-muted/50 rounded-lg flex items-center justify-center cursor-pointer group"

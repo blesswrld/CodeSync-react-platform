@@ -26,7 +26,7 @@ import UserInfo from "@/components/UserInfo";
 import { Loader2Icon, XIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { TIME_SLOTS } from "../../constants/index";
-import MeetingCard from "@/components/MeetingCard";
+import MeetingCard from "@/components/MeetingCard"; // Assuming MeetingCard is where the card UI resides
 import { useUserRole } from "@/hooks/useUserRole";
 import { useRouter } from "next/navigation";
 import LoaderUI from "@/components/LoaderUI";
@@ -473,12 +473,16 @@ function InterviewScheduleUI() {
                     <h2 className="text-2xl font-semibold mb-4">
                         Scheduled Interviews
                     </h2>
+                    {/* Added animation classes to the grid items (MeetingCard) */}
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {existingInterviews.map((interview) => (
-                            <MeetingCard
+                            <div
                                 key={interview._id}
-                                interview={interview}
-                            />
+                                // Add animation classes here
+                                className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out"
+                            >
+                                <MeetingCard interview={interview} />
+                            </div>
                         ))}
                     </div>
                 </div>

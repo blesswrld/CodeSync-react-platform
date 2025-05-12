@@ -150,7 +150,9 @@ function DashboardPage() {
                                                 return (
                                                     <Card
                                                         key={interview._id}
-                                                        className="hover:shadow-md transition-all"
+                                                        // Added subtle lift and larger shadow on hover.
+                                                        // The 'transition-all' class already handles the animation.
+                                                        className="hover:shadow-lg hover:-translate-y-0.5 transition-all"
                                                     >
                                                         <CardHeader className="p-4">
                                                             <div className="flex items-center gap-3">
