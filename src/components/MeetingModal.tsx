@@ -37,7 +37,7 @@ function MeetingModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm: w-[90%]">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import MeetingModal from "@/components/MeetingModal";
 import LoaderUI from "@/components/LoaderUI";
+import { motion } from "framer-motion"; // Шаг 1: Импортируем motion
 
 export default function Home() {
     const router = useRouter();
@@ -25,15 +26,27 @@ export default function Home() {
                 setShowModal(true);
                 break;
             default:
-                router.push(`/${title.toLowerCase()}`);
+                router.push(`/${title.toLowerCase().replace(" ", "-")}`);
         }
     };
 
     if (isLoading) return <LoaderUI />;
 
     return (
-        <div className="container max-w-7xl mx-auto p-6 animate-in fade-in duration-500">
-            <div className="rounded-lg bg-card p-6 border shadow-sm mb-10 animate-slide-down">
+        // Шаг 2: Заменяем div на motion.div и применяем анимацию
+        <motion.div
+            className="container max-w-7xl mx-auto p-6"
+            // Начальное состояние: невидимый и уменьшенный
+            initial={{ opacity: 0, scale: 0.95 }}
+            // Конечное состояние: полностью видимый и в нормальном размере
+            animate={{ opacity: 1, scale: 1 }}
+            // Настройки анимации, как в вашем примере
+            transition={{
+                duration: 1,
+                ease: [0, 0.71, 0.2, 1.01],
+            }}
+        >
+            <div className="rounded-lg bg-card p-6 border shadow-sm mb-10">
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
                     Welcome back!
                 </h1>
@@ -66,6 +79,6 @@ export default function Home() {
                     isJoinMeeting={modalType === "join"}
                 />
             </>
-        </div>
+        </motion.div>
     );
 }

@@ -90,7 +90,7 @@ function DashboardPage() {
 
     return (
         <div className="container mx-auto py-10">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-5 flex-wrap justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold">{pageTitle}</h1>
                     <p className="text-muted-foreground mt-1">

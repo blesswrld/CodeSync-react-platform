@@ -1,11 +1,32 @@
 import { QuickActionType } from "../app/constants/index";
 import { Card } from "./ui/card";
+// Импорт motion для анимаций
+import { motion } from "motion/react";
 
 // some weird tw bug, but this is how it works
 // from-orange-500/10 via-orange-500/5 to-transparent
 // from-blue-500/10 via-blue-500/5 to-transparent
 // from-purple-500/10 via-purple-500/5 to-transparent
 // from-primary/10 via-primary/5 to-transparent
+
+const MotionCard = motion(Card);
+
+const cardVariants = {
+    // Состояние по умолчанию
+    initial: {
+        y: 0,
+        scale: 1,
+        boxShadow:
+            "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+    },
+    // Состояние при наведении курсора
+    hover: {
+        y: -4,
+        scale: 1.03,
+        boxShadow:
+            "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+    },
+};
 
 function ActionCard({
     action,
@@ -15,8 +36,16 @@ function ActionCard({
     onClick: () => void;
 }) {
     return (
-        <Card
-            className="group relative overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer animate-in fade-in duration-500 hover:-translate-y-1"
+        <MotionCard
+            // Применяем наши варианты анимации
+            variants={cardVariants}
+            initial="initial"
+            whileHover="hover"
+            // Добавляем анимацию нажатия, как в вашем примере
+            whileTap={{ scale: 0.98, y: -2 }}
+            // Задаем физику анимации один раз
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="group relative overflow-hidden cursor-pointer"
             onClick={onClick}
         >
             <div
@@ -43,7 +72,7 @@ function ActionCard({
                     </div>
                 </div>
             </div>
-        </Card>
+        </MotionCard>
     );
 }
 

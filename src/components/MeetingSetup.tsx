@@ -144,8 +144,8 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                                         Join Meeting
                                     </Button>
                                     <p className="text-xs text-center text-muted-foreground animate-in fade-in duration-300 delay-400">
-                                        Do not worry, our team is super
-                                        friendly! We want you to succeed. 🎉
+                                        You can share the meeting link with your
+                                        friends or colleagues. 🎉
                                     </p>
                                 </div>
                             </div>
