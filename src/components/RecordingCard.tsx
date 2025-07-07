@@ -18,7 +18,7 @@ import { Button } from "./ui/button";
 // Шаг 2: Обновляем тип пропсов, чтобы компонент принимал функцию onDelete
 type RecordingCardProps = {
     recording: CallRecording;
-    onDelete: (url: string) => void;
+    onDelete?: (url: string) => void;
 };
 
 // Шаг 3: Обновляем параметры компонента
@@ -37,7 +37,9 @@ function RecordingCard({ recording, onDelete }: RecordingCardProps) {
         // Останавливаем "всплытие" события, чтобы клик по корзине
         // не вызвал клик по всей карточке (который открывает видео)
         e.stopPropagation();
-        onDelete(recording.url);
+        if (onDelete) {
+            onDelete(recording.url);
+        }
     };
 
     const formattedStartTime = recording.start_time
@@ -97,17 +99,19 @@ function RecordingCard({ recording, onDelete }: RecordingCardProps) {
             </CardFooter>
 
             {/* Шаг 6: Добавляем саму кнопку удаления */}
-            <div className="absolute top-3 right-3">
-                <Button
-                    variant="destructive"
-                    size="icon"
-                    onClick={handleDeleteClick}
-                    className="size-8 rounded-full opacity-50 group-hover:opacity-100 transition-opacity"
-                    aria-label="Delete recording"
-                >
-                    <Trash2 className="size-4" />
-                </Button>
-            </div>
+            {onDelete && (
+                <div className="absolute top-3 right-3">
+                    <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={handleDeleteClick}
+                        className="size-8 rounded-full opacity-50 group-hover:opacity-100 transition-opacity"
+                        aria-label="Delete recording"
+                    >
+                        <Trash2 className="size-4" />
+                    </Button>
+                </div>
+            )}
         </Card>
     );
 }
