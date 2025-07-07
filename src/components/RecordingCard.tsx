@@ -1,12 +1,28 @@
+"use client";
+
 import { CallRecording } from "@stream-io/video-react-sdk";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { calculateRecordingDuration } from "@/lib/utils";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
-import { CalendarIcon, ClockIcon, CopyIcon, PlayIcon } from "lucide-react";
+// Шаг 1: Импортируем иконку корзины
+import {
+    CalendarIcon,
+    ClockIcon,
+    CopyIcon,
+    PlayIcon,
+    Trash2,
+} from "lucide-react";
 import { Button } from "./ui/button";
 
-function RecordingCard({ recording }: { recording: CallRecording }) {
+// Шаг 2: Обновляем тип пропсов, чтобы компонент принимал функцию onDelete
+type RecordingCardProps = {
+    recording: CallRecording;
+    onDelete: (url: string) => void;
+};
+
+// Шаг 3: Обновляем параметры компонента
+function RecordingCard({ recording, onDelete }: RecordingCardProps) {
     const handleCopyLink = async () => {
         try {
             await navigator.clipboard.writeText(recording.url);
@@ -14,6 +30,14 @@ function RecordingCard({ recording }: { recording: CallRecording }) {
         } catch (error) {
             toast.error("Failed to copy link to clipboard");
         }
+    };
+
+    // Шаг 4: Создаем обработчик для кнопки удаления
+    const handleDeleteClick = (e: React.MouseEvent) => {
+        // Останавливаем "всплытие" события, чтобы клик по корзине
+        // не вызвал клик по всей карточке (который открывает видео)
+        e.stopPropagation();
+        onDelete(recording.url);
     };
 
     const formattedStartTime = recording.start_time
@@ -29,9 +53,8 @@ function RecordingCard({ recording }: { recording: CallRecording }) {
             : "Unknown duration";
 
     return (
-        // Added subtle lift and larger shadow on hover using Tailwind classes.
-        // The 'transition-all' class already handles the animation duration and easing.
-        <Card className="group hover:shadow-lg hover:-translate-y-0.5 transition-all">
+        // Шаг 5: Добавляем 'relative', чтобы позиционировать кнопку удаления
+        <Card className="group relative hover:shadow-lg hover:-translate-y-0.5 transition-all">
             {/* CARD HEADER */}
             <CardHeader className="space-y-1">
                 <div className="space-y-2">
@@ -72,6 +95,19 @@ function RecordingCard({ recording }: { recording: CallRecording }) {
                     <CopyIcon className="size-4" />
                 </Button>
             </CardFooter>
+
+            {/* Шаг 6: Добавляем саму кнопку удаления */}
+            <div className="absolute top-3 right-3">
+                <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={handleDeleteClick}
+                    className="size-8 rounded-full opacity-50 group-hover:opacity-100 transition-opacity"
+                    aria-label="Delete recording"
+                >
+                    <Trash2 className="size-4" />
+                </Button>
+            </div>
         </Card>
     );
 }

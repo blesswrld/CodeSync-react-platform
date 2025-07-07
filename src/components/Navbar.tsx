@@ -1,9 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { ModeToggle } from "./ModeToggle";
 import { CodeIcon } from "lucide-react";
 import { SignedIn, UserButton } from "@clerk/nextjs";
 import DashboardBtn from "./DashboardBtn";
 import { MobileNav } from "./MobileNav";
+import { motion } from "framer-motion";
+
+// MotionLink для ссылки
+const MotionLink = motion(Link);
 
 function Navbar() {
     return (
@@ -11,16 +17,20 @@ function Navbar() {
             <div className="flex h-full items-center flex-wrap px-2 sm:px-4 container mx-auto">
                 {/* LEFT SIDE -LOGO */}
                 <div className="flex-1">
-                    {/* Добавлена обертка flex-1 для правильного позиционирования логотипа */}
-                    <Link
+                    <MotionLink
                         href="/"
-                        className="flex items-center gap-1 sm:gap-2 font-semibold text-xl sm:text-2xl mr-2 sm:mr-4 md:mr-6 font-mono hover:opacity-80 transition-opacity animate-in slide-in-from-left-8 duration-500 ease-out"
+                        className="inline-flex items-center gap-1 sm:gap-2 font-semibold text-xl sm:text-2xl mr-2 sm:mr-4 md:mr-6 font-mono transition-transform ease-out"
+                        whileHover={{ scale: 1.05, rotate: -0.05 }}
+                        transition={{
+                            type: "spring",
+                            duration: 0.3,
+                        }}
                     >
-                        <CodeIcon className="size-7 sm:size-8 text-emerald-500 transition-transform duration-200 hover:rotate-6" />
+                        <CodeIcon className="size-7 sm:size-8 text-emerald-500 transition-transform duration-200" />
                         <span className="hidden min-[380px]:inline bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
                             CodeSync
                         </span>
-                    </Link>
+                    </MotionLink>
                 </div>
                 {/* RIGHT SIDE - ACTIONS */}
                 <SignedIn>
@@ -39,4 +49,5 @@ function Navbar() {
         </nav>
     );
 }
+
 export default Navbar;
